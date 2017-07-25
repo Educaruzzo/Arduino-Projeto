@@ -3,7 +3,7 @@
 //Endereco I2C do MPU6050
 const int MPU = 0x68;  
 //Variaveis para armazenar valores dos sensores
-double AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
+int AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
 int Pitch, Roll, Yaw;
 
 void setup()
