@@ -61,7 +61,7 @@ void InicializaMPU() {
   Wire.write(0x6B);
   Wire.write(0); 
   Wire.endTransmission(true);
-  delay(1000)
+  delay(1000);
 }
 
 void CapturaValores(int *AcX, int *AcY, int *AcZ, int *Tmp, int *GyX, int *GyY, int *GyZ) {
