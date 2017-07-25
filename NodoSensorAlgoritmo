@@ -21,26 +21,26 @@ void loop()
   Yaw = FunctionsPitchRoll(AcZ, AcY, AcX);
   
   //Envia valor X do acelerometro para a serial
-  Serial.print("AcX = "); Serial.print( (int) AcX);
+  Serial.print("AcX = "); Serial.print(AcX);
    
   //Envia valor Y do acelerometro para a serial
-  Serial.print(" | AcY = "); Serial.print( (int) AcY);
+  Serial.print(" | AcY = "); Serial.print(AcY);
    
   //Envia valor Z do acelerometro para a serial
-  Serial.print(" | AcZ = "); Serial.print( (int) AcZ);
+  Serial.print(" | AcZ = "); Serial.print(AcZ);
    
   //Envia valor da temperatura para a serial
   //Calcula a temperatura em graus Celsius
-  Serial.print(" | Tmp = "); Serial.print( (int) Tmp/340.00+36.53);
+  Serial.print(" | Tmp = "); Serial.print(Tmp/340.00+36.53);
    
   //Envia valor X do giroscopio para a serial
-  Serial.print(" | GyX = "); Serial.print( (int) GyX);
+  Serial.print(" | GyX = "); Serial.print(GyX);
    
   //Envia valor Y do giroscopio para a serial
-  Serial.print(" | GyY = "); Serial.print( (int) GyY);
+  Serial.print(" | GyY = "); Serial.print(GyY);
    
   //Envia valor Z do giroscopio para a serial
-  Serial.print(" | GyZ = "); Serial.println( (int) GyZ);
+  Serial.print(" | GyZ = "); Serial.println(GyZ);
    
   //Envia valor do Pitch para a serial
   Serial.print(" | Pitch = "); Serial.print(Pitch);
