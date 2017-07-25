@@ -1,10 +1,15 @@
 #include<Wire.h>
  
+#define EM_PE 0
+#define SENTADO 1
+#define DEITADO 2
+
 //Endereco I2C do MPU6050
 const int MPU = 0x68;  
 //Variaveis para armazenar valores dos sensores
 int AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
 int Pitch, Roll, Yaw;
+int Estado;
 
 void setup()
 {
@@ -21,6 +26,7 @@ void loop()
   Yaw = FunctionsPitchRoll(AcZ, AcY, AcX);
   
   ExibeValoresViaSerial(AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ, Pitch, Roll, Yaw);
+  Estado = VerificaEstado(Pitch, Roll, Yaw);
   
   //Aguarda 300 ms e reinicia o processo
   delay(800);
@@ -96,4 +102,8 @@ void ExibeValoresViaSerial(int AcX, int AcY, int AcZ, int Tmp, int GyX, int GyY,
    
   //Envia valor do Yaw para a serial
   Serial.print(" | Yaw = "); Serial.println(Yaw);
+}
+
+int VerificaEstado(int Pitch, int Roll, int Yaw) {
+  
 }
