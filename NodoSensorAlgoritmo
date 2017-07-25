@@ -39,6 +39,15 @@ void loop()
   //Envia valor Z do giroscopio para a serial
   Serial.print(" | GyZ = "); Serial.println( (int) GyZ);
    
+  //Envia valor do Pitch para a serial
+  Serial.print(" | Pitch = "); Serial.print(Pitch);
+   
+  //Envia valor do Roll para a serial
+  Serial.print(" | Roll = "); Serial.print(Roll);
+   
+  //Envia valor do Yaw para a serial
+  Serial.print(" | Yaw = "); Serial.println(Yaw);
+   
   //Aguarda 300 ms e reinicia o processo
   delay(300);
 }
