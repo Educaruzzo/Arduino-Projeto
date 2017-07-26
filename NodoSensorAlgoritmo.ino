@@ -1,35 +1,54 @@
 #include<Wire.h>
  
-#define EM_PE 0
-#define SENTADO 1
-#define DEITADO 2
+#define PARADO 0      // Sentado ou em pé
+#define DEITADO 1
+#define EM_MOVIMENTO 2
+#define INDEFINIDO 3
+
+#define LIMITE_OSCILACAO_MOVIMENTO 2400
+#define LIMITE_VARIACAO_QUEDA 50000
 
 //Endereco I2C do MPU6050
 const int MPU = 0x68;  
 //Variaveis para armazenar valores dos sensores
-int AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
+int AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ, Norma;
+int antAcX,antAcY,antAcZ;
 int Pitch, Roll, Yaw;
-int Estado;
+int Estado, Movimento;
 
 void setup()
 {
   Serial.begin(9600);
   InicializaMPU();
+  Estado = INDEFINIDO;
+  antAcX = 0;
+  antAcY = 0;
+  antAcZ = 0;
 }
 
 void loop()
 {
   CapturaValores(&AcX, &AcY, &AcZ, &Tmp, &GyX, &GyY, &GyZ);
+
+  Norma = sqrt(pow(AcX, 2) + pow(AcY, 2) + pow(AcZ, 2));
+  //Serial.print(" | Norma = "); Serial.println(Norma);
   
   Pitch = FunctionsPitchRoll(AcX, AcY, AcZ);
   Roll = FunctionsPitchRoll(AcY, AcX, AcZ);
   Yaw = FunctionsPitchRoll(AcZ, AcY, AcX);
   
-  ExibeValoresViaSerial(AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ, Pitch, Roll, Yaw);
-  Estado = VerificaEstado(Pitch, Roll, Yaw);
+  ExibeValoresViaSerial(AcX, AcY, AcZ, Tmp, GyX, GyY, GyZ, Pitch, Roll, Yaw, Estado);
+  Movimento = (abs((AcX - antAcX) + (AcY - antAcY) + (AcZ - antAcZ)) >= LIMITE_OSCILACAO_MOVIMENTO);
+  Estado = VerificaEstado(Pitch, Roll, Yaw, Movimento);
   
-  //Aguarda 300 ms e reinicia o processo
-  delay(800);
+  DetectaQueda(Norma, Estado);
+  
+  antAcX = AcX;
+  antAcY = AcY;
+  antAcZ = AcZ;
+  
+  //Aguarda 1000 ms e reinicia o processo
+  delay(1000);
 }
 
 void InicializaMPU() {
@@ -71,7 +90,7 @@ int FunctionsPitchRoll(double A, double B, double C){
   return (int) Value;
 }
 
-void ExibeValoresViaSerial(int AcX, int AcY, int AcZ, int Tmp, int GyX, int GyY, int GyZ, int Pitch, int Roll, int Yaw) {
+void ExibeValoresViaSerial(int AcX, int AcY, int AcZ, int Tmp, int GyX, int GyY, int GyZ, int Pitch, int Roll, int Yaw, int Estado) {
   //Envia valor X do acelerometro para a serial
   Serial.print("AcX = "); Serial.print(AcX);
    
@@ -102,8 +121,49 @@ void ExibeValoresViaSerial(int AcX, int AcY, int AcZ, int Tmp, int GyX, int GyY,
    
   //Envia valor do Yaw para a serial
   Serial.print(" | Yaw = "); Serial.println(Yaw);
+
+  //Envia o Estado para a serial
+  switch (Estado) {
+    case PARADO:
+      Serial.print(" | Estado = "); Serial.println("==Parado==");
+      break;
+    case DEITADO:
+      Serial.print(" | Estado = "); Serial.println("==Deitado==");
+      break;
+    case EM_MOVIMENTO:
+      Serial.print(" | Estado = "); Serial.println("==Em Movimento==");
+      break;
+    case INDEFINIDO:
+      Serial.print(" | Estado = "); Serial.println("==Indefinido==");
+      break;
+    default:
+      Serial.print(" | Estado = "); Serial.println("==Indefinido==");
+  }
 }
 
-int VerificaEstado(int Pitch, int Roll, int Yaw) {
-  
+int VerificaEstado(int Pitch, int Roll, int Yaw, int Movimento) {
+
+  if (abs(Pitch) >= 45) {
+    if (Movimento) {
+      return(EM_MOVIMENTO);
+    }
+    return (PARADO);
+  }
+
+  if ((abs(Roll) > 45)||(abs(Yaw) > 45)) {
+    return (DEITADO);
+  }
+  return INDEFINIDO;
+}
+
+void DetectaQueda(int Norma, int Estado) {
+
+  if (Norma > LIMITE_VARIACAO_QUEDA) {
+    if (Estado != PARADO) {
+      Serial.println(" CAIU!!"); 
+    }
+    else {
+      Serial.println(" FALSA QUEDA!!"); 
+    }
+  }
 }
