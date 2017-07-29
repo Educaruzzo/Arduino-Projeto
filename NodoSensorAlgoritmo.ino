@@ -1,15 +1,6 @@
 #include<Wire.h>
 #include<I2Cdev.h>
-#include<MPU6050.h>
-/*
-=======OFFSETS=======
-| AcX = -878.57
- | AcY = -243.53
- | AcZ = 15273.38
- | GyX = -327.67
- | GyY = 168.84
- | GyZ = -90.91
-*/
+
 /*
 Sensor readings with offsets:  -4  1 16379 -1  0 0
 Your offsets: 1283  977 2389  82  -43 22
@@ -22,6 +13,7 @@ Your offsets: 1283  977 2389  82  -43 22
 #define CAL_GYY -43
 #define CAL_GYZ 22
 
+// Endereço dos Registradores de offset do MPU6050
 #define ACCEL_X_OFFS_H 0x06
 #define ACCEL_Y_OFFS_H 0x08
 #define ACCEL_Z_OFFS_H 0x0A
@@ -29,18 +21,18 @@ Your offsets: 1283  977 2389  82  -43 22
 #define GYR_Y_OFFS 0x15
 #define GYR_Z_OFFS 0x17
  
-#define PARADO 0      // Sentado ou em pé
+#define PARADO 0          // Sentado ou em pé
 #define DEITADO 1
-#define EM_MOVIMENTO 2
+#define EM_MOVIMENTO 2    // Em pé/sentado (mas em movimento)
 #define INDEFINIDO 3
 
-#define LIMITE_OSCILACAO_MOVIMENTO 2400
+#define LIMITE_OSCILACAO_MOVIMENTO 1900
 #define LIMITE_SUPERIOR_VARIACAO_QUEDA 35000
-#define LIMITE_INFERIOR_VARIACAO_QUEDA 1000
+#define LIMITE_INFERIOR_VARIACAO_QUEDA 10000
 
 //Endereco I2C do MPU6050
 const int MPU = 0x68;  
-//Variaveis para armazenar valores dos sensores
+//Variaveis para armazenar valores dos sensores, bem como a Norma (SVM)
 int AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ, Norma;
 int antAcX,antAcY,antAcZ;
 int Pitch, Roll, Yaw;
@@ -63,15 +55,16 @@ void loop()
   CapturaValores();
 
   Norma = sqrt(square(AcX) + square(AcY) + square(AcZ));
-  //Serial.print(" | Norma = "); Serial.println(Norma);
+  Serial.print(" | Norma = "); Serial.println(Norma);
   
   Pitch = FunctionsPitchRoll(AcX, AcY, AcZ);
   Roll = FunctionsPitchRoll(AcY, AcX, AcZ);
   Yaw = FunctionsPitchRoll(AcZ, AcY, AcX);
   
-  ExibeValoresViaSerial();
   Movimento = (abs((AcX - antAcX) + (AcY - antAcY) + (AcZ - antAcZ)) >= LIMITE_OSCILACAO_MOVIMENTO);
   Estado = VerificaEstado();
+  //Serial.print(" | State = "); Serial.println(Estado);
+  ExibeValoresViaSerial();
   
   DetectaQueda();
   
@@ -124,35 +117,35 @@ int FunctionsPitchRoll(double A, double B, double C){
 
 void ExibeValoresViaSerial() {
   //Envia valor X do acelerometro para a serial
-  Serial.print("AcX = "); Serial.print(AcX);
+  //Serial.print("AcX = "); Serial.print(AcX);
    
   //Envia valor Y do acelerometro para a serial
-  Serial.print(" | AcY = "); Serial.print(AcY);
+  //Serial.print(" | AcY = "); Serial.print(AcY);
    
   //Envia valor Z do acelerometro para a serial
-  Serial.print(" | AcZ = "); Serial.print(AcZ);
+  //Serial.print(" | AcZ = "); Serial.print(AcZ);
    
   //Envia valor da temperatura para a serial
   //Calcula a temperatura em graus Celsius
-  Serial.print(" | Tmp = "); Serial.print(Tmp/340.00+36.53);
+  //Serial.print(" | Tmp = "); Serial.print(Tmp/340.00+36.53);
    
   //Envia valor X do giroscopio para a serial
-  Serial.print(" | GyX = "); Serial.print(GyX);
+  //Serial.print(" | GyX = "); Serial.print(GyX);
    
   //Envia valor Y do giroscopio para a serial
-  Serial.print(" | GyY = "); Serial.print(GyY);
+  //Serial.print(" | GyY = "); Serial.print(GyY);
    
   //Envia valor Z do giroscopio para a serial
-  Serial.print(" | GyZ = "); Serial.println(GyZ);
+  //Serial.print(" | GyZ = "); Serial.println(GyZ);
    
   //Envia valor do Pitch para a serial
-  Serial.print(" | Pitch = "); Serial.print(Pitch);
+  //Serial.print(" | Pitch = "); Serial.print(Pitch);
    
   //Envia valor do Roll para a serial
-  Serial.print(" | Roll = "); Serial.print(Roll);
+  //Serial.print(" | Roll = "); Serial.print(Roll);
    
   //Envia valor do Yaw para a serial
-  Serial.print(" | Yaw = "); Serial.println(Yaw);
+  //Serial.print(" | Yaw = "); Serial.println(Yaw);
 
   //Envia o Estado para a serial
   switch (Estado) {
@@ -189,9 +182,9 @@ int VerificaEstado() {
 }
 
 void DetectaQueda() {
-
-  if ((Norma <= LIMITE_INFERIOR_VARIACAO_QUEDA)||(Norma > LIMITE_SUPERIOR_VARIACAO_QUEDA)) {
-    if (Estado != PARADO) {
+  
+  if (Norma <= LIMITE_INFERIOR_VARIACAO_QUEDA) {
+    if ((Estado != PARADO)&&(Estado != EM_MOVIMENTO)) {
       Serial.println(" CAIU!!"); 
     }
     else {
