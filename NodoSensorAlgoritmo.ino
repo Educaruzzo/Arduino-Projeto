@@ -1,12 +1,44 @@
 #include<Wire.h>
+#include<I2Cdev.h>
+/*
+=======OFFSETS=======
+| AcX = -878.57
+ | AcY = -243.53
+ | AcZ = 15273.38
+ | GyX = -327.67
+ | GyY = 168.84
+ | GyZ = -90.91
+*/
+
+/*#define CAL_ACX 1270
+#define CAL_ACY 1074
+#define CAL_ACZ 460
+#define CAL_GYX 81
+#define CAL_GYY -42
+#define CAL_GYZ 24*/
+
+#define CAL_ACX 1570
+#define CAL_ACY 1274
+#define CAL_ACZ 760
+#define CAL_GYX 181
+#define CAL_GYY 42
+#define CAL_GYZ 124
+
+#define ACCEL_X_OFFS_H 0x06
+#define ACCEL_Y_OFFS_H 0x08
+#define ACCEL_Z_OFFS_H 0x0A
+#define GYR_X_OFFS 0x13
+#define GYR_Y_OFFS 0x15
+#define GYR_Z_OFFS 0x17
  
 #define PARADO 0      // Sentado ou em pé
 #define DEITADO 1
 #define EM_MOVIMENTO 2
 #define INDEFINIDO 3
 
-#define LIMITE_OSCILACAO_MOVIMENTO 2400
-#define LIMITE_VARIACAO_QUEDA 50000
+#define LIMITE_OSCILACAO_MOVIMENTO 2000
+#define LIMITE_SUPERIOR_VARIACAO_QUEDA 35000
+#define LIMITE_INFERIOR_VARIACAO_QUEDA 200
 
 //Endereco I2C do MPU6050
 const int MPU = 0x68;  
@@ -20,6 +52,7 @@ void setup()
 {
   Serial.begin(9600);
   InicializaMPU();
+  CalibraValores();
   Estado = INDEFINIDO;
   antAcX = 0;
   antAcY = 0;
@@ -158,7 +191,7 @@ int VerificaEstado() {
 
 void DetectaQueda() {
 
-  if (Norma > LIMITE_VARIACAO_QUEDA) {
+  if ((Norma <= LIMITE_INFERIOR_VARIACAO_QUEDA)||(Norma > LIMITE_SUPERIOR_VARIACAO_QUEDA)) {
     if (Estado != PARADO) {
       Serial.println(" CAIU!!"); 
     }
@@ -167,3 +200,13 @@ void DetectaQueda() {
     }
   }
 }
+
+void CalibraValores() {
+  /*I2Cdev::writeWord(MPU, ACCEL_X_OFFS_H, CAL_ACX);
+  I2Cdev::writeWord(MPU, ACCEL_Y_OFFS_H, CAL_ACY);
+  I2Cdev::writeWord(MPU, ACCEL_Z_OFFS_H, CAL_ACZ);
+  I2Cdev::writeWord(MPU, GYR_X_OFFS, CAL_GYX);
+  I2Cdev::writeWord(MPU, GYR_Y_OFFS, CAL_GYY);
+  I2Cdev::writeWord(MPU, GYR_Z_OFFS, CAL_GYZ);*/
+}
+
