@@ -1,5 +1,6 @@
 #include<Wire.h>
 #include<I2Cdev.h>
+#include<MPU6050.h>
 /*
 =======OFFSETS=======
 | AcX = -878.57
@@ -9,20 +10,17 @@
  | GyY = 168.84
  | GyZ = -90.91
 */
+/*
+Sensor readings with offsets:  -4  1 16379 -1  0 0
+Your offsets: 1283  977 2389  82  -43 22
+*/
 
-/*#define CAL_ACX 1270
-#define CAL_ACY 1074
-#define CAL_ACZ 460
-#define CAL_GYX 81
-#define CAL_GYY -42
-#define CAL_GYZ 24*/
-
-#define CAL_ACX 1570
-#define CAL_ACY 1274
-#define CAL_ACZ 760
-#define CAL_GYX 181
-#define CAL_GYY 42
-#define CAL_GYZ 124
+#define CAL_ACX 1283
+#define CAL_ACY 977
+#define CAL_ACZ 2389
+#define CAL_GYX 82
+#define CAL_GYY -43
+#define CAL_GYZ 22
 
 #define ACCEL_X_OFFS_H 0x06
 #define ACCEL_Y_OFFS_H 0x08
@@ -36,9 +34,9 @@
 #define EM_MOVIMENTO 2
 #define INDEFINIDO 3
 
-#define LIMITE_OSCILACAO_MOVIMENTO 2000
+#define LIMITE_OSCILACAO_MOVIMENTO 2400
 #define LIMITE_SUPERIOR_VARIACAO_QUEDA 35000
-#define LIMITE_INFERIOR_VARIACAO_QUEDA 200
+#define LIMITE_INFERIOR_VARIACAO_QUEDA 1000
 
 //Endereco I2C do MPU6050
 const int MPU = 0x68;  
@@ -53,6 +51,7 @@ void setup()
   Serial.begin(9600);
   InicializaMPU();
   CalibraValores();
+  delay(1000);
   Estado = INDEFINIDO;
   antAcX = 0;
   antAcY = 0;
@@ -202,11 +201,11 @@ void DetectaQueda() {
 }
 
 void CalibraValores() {
-  /*I2Cdev::writeWord(MPU, ACCEL_X_OFFS_H, CAL_ACX);
+  I2Cdev::writeWord(MPU, ACCEL_X_OFFS_H, CAL_ACX);
   I2Cdev::writeWord(MPU, ACCEL_Y_OFFS_H, CAL_ACY);
   I2Cdev::writeWord(MPU, ACCEL_Z_OFFS_H, CAL_ACZ);
   I2Cdev::writeWord(MPU, GYR_X_OFFS, CAL_GYX);
   I2Cdev::writeWord(MPU, GYR_Y_OFFS, CAL_GYY);
-  I2Cdev::writeWord(MPU, GYR_Z_OFFS, CAL_GYZ);*/
+  I2Cdev::writeWord(MPU, GYR_Z_OFFS, CAL_GYZ);
 }
 
